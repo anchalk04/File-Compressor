@@ -26,3 +26,54 @@ span,
 span:hover {
   cursor: pointer;
 }
+
+/* New styles for Result Display */
+#results-container {
+  margin-top: 2rem;
+  display: flex; /* Stacks the results vertically */
+  flex-direction: column;
+  gap: 20px;
+}
+
+.result-box {
+  background-color: rgba(0, 0, 50, 0.8); /* Semi-transparent dark blue background */
+  border: 2px solid #1bcce8; /* Border matching your primary color */
+  padding: 25px;
+  border-radius: 10px;
+  min-height: 100px;
+}
+
+/* Style for the main status message */
+.result-box h2 {
+  color: #00ff00; /* Bright green for success */
+  margin-bottom: 15px;
+  border-bottom: 1px solid #1bcce8;
+  padding-bottom: 5px;
+  font-size: 1.5rem;
+  font-style: normal;
+}
+
+/* Style for all paragraphs in the result box */
+.result-box p {
+  font-size: 1rem;
+  margin: 5px 0;
+  font-weight: normal; 
+  font-style: normal;
+  color: aliceblue;
+}
+
+/* Style for important metrics like the ratio and reduction */
+.highlight {
+  color: #ffcc00; /* Gold color for emphasis */
+  font-weight: bold;
+}
+
+/* Style for the new Reset button */
+.btn-warning {
+    background-color: #ffc107; /* Standard yellow/orange warning color */
+    border-color: #ffc107;
+    color: #000; /* Black text for contrast */
+}
+
+/* Ensure the margin spacing remains consistent if the buttons are on one line */
+/* If you want the reset button on a new line, remove 'display: block' from .btn-lg in the original file */

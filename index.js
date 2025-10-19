@@ -281,10 +281,12 @@ function decode(onEncode)
 onload=function()
 {
     var upload=document.getElementById("upload")
-    var text=document.getElementById("text")
+    var encodeResults = document.getElementById("encode-results");
+    var decodeResults = document.getElementById("decode-results");
     var encode=document.getElementById("encode")
     var decode=document.getElementById("decode")
     var upload_lable=document.getElementById("upload_lable")
+    var resetButton = document.getElementById("reset");
 
     function download(fileName,data)
     {
@@ -297,54 +299,109 @@ onload=function()
 
 
     // upload.addEventListener("change",()=>{alert("File Uploaded")})
-    upload.addEventListener("change",()=>{upload_lable.innerText=upload.files[0].name;
-    text.innerText=""})
-    encode.onclick=function()
-    {
-        text.innerText="";
-        const Uploaded=upload.files[0];
-        console.log(Uploaded);
-        if(Uploaded===undefined)
-        {
-            text.innerText="FILE NOT UPLOADED"
+    upload.addEventListener("change",()=>{
+        upload_lable.innerText=upload.files[0].name;
+        // Clear results when a new file is uploaded
+        encodeResults.innerHTML = ""; 
+        decodeResults.innerHTML = "";
+    })
+
+    encode.onclick = function() {
+        // 1. Clear both result boxes before starting
+        encodeResults.innerHTML = "";
+        decodeResults.innerHTML = "";
+
+        const Uploaded = upload.files[0];
+        if (Uploaded === undefined) {
+            encodeResults.innerHTML = "<h2>❌ FILE NOT UPLOADED</h2><p>Please upload a text file to compress.</p>";
+            return;
         }
-        const fileReader=new FileReader();
-        fileReader.onload=function(fileLoadEvent)
-        {
-            const data=fileLoadEvent.target.result;
-            if(data.length===0)
-            {
-                data="No Data";
+
+        const fileReader = new FileReader();
+        fileReader.onload = function(fileLoadEvent) {
+            const data = fileLoadEvent.target.result;
+            if (data.length === 0) {
+                encodeResults.innerHTML = "<h2>❌ EMPTY FILE</h2><p>The uploaded file contains no data.</p>";
+                return;
             }
-            var encode=new Encode(data);
-            var temp=encode.encode(data);
-            text.innerText="The File is comperssed with \n Compression Ratio = "+(data.length/temp.length);
-            download(Uploaded.name.split(".")+"_Encoded.txt",temp)
+
+            var encode = new Encode(data);
+            var temp = encode.encode(data);
+
+            // Calculate metrics for display
+            const originalSize = data.length;
+            const encodedSize = temp.length;
+            // Compression Ratio: Original Size / Encoded Size (e.g., 2.5:1)
+            const ratio = (originalSize / encodedSize).toFixed(2);
+            // Size Reduction: Percentage decrease
+            const reduction = (((originalSize - encodedSize) / originalSize) * 100).toFixed(2);
+
+            // Display results using structured HTML
+            encodeResults.innerHTML = `
+                <h2>✅ ENCODING COMPLETE</h2>
+                <p><strong>File Name:</strong> ${Uploaded.name}</p>
+                <p><strong>Original Character Size:</strong> ${originalSize}</p>
+                <p><strong>Encoded Character Size:</strong> ${encodedSize}</p>
+                <p class="highlight"><strong>Compression Ratio:</strong> ${ratio}:1</p>
+                <p class="highlight"><strong>Size Reduction:</strong> ${reduction}%</p>
+                <p>The encoded file has been successfully downloaded as <strong>${Uploaded.name.split(".").slice(0, -1).join(".")}_Encoded.txt</strong>.</p>
+            `;
+
+            download(Uploaded.name.split(".").slice(0, -1).join(".") + "_Encoded.txt", temp);
         }
-        fileReader.readAsText(Uploaded,"UTF-8");
-        Uploaded=undefined;
+        fileReader.readAsText(Uploaded, "UTF-8");
+        // Removed: Uploaded=undefined;
     }
-    decode.onclick=function()
-    {
-        const Uploaded=upload.files[0];
-        if(Uploaded===undefined)
-        {
-            text.innerText="FILE NOT UPLOADED"
+
+    decode.onclick = function() {
+        // 1. Clear both result boxes before starting
+        encodeResults.innerHTML = "";
+        decodeResults.innerHTML = "";
+
+        const Uploaded = upload.files[0];
+        if (Uploaded === undefined) {
+            decodeResults.innerHTML = "<h2>❌ FILE NOT UPLOADED</h2><p>Please upload the encoded file to decode.</p>";
+            return;
         }
-        const fileReader=new FileReader();
-        fileReader.onload=function(fileLoadEvent)
-        {
-            const data=fileLoadEvent.target.result;
-            if(data.length===0)
-            {
-                data="No Data";
+
+        const fileReader = new FileReader();
+        fileReader.onload = function(fileLoadEvent) {
+            const data = fileLoadEvent.target.result;
+            if (data.length === 0) {
+                decodeResults.innerHTML = "<h2>❌ EMPTY FILE</h2><p>The uploaded file contains no data.</p>";
+                return;
             }
-            var decode=new Decode(data);
-            var temp=decode.decode();
-            text.innerText="The Original Text is downloaded";
-            download(Uploaded.name.split(".")+"_Original.txt",temp)
+
+            var decode = new Decode(data);
+            var temp = decode.decode();
+
+            // Display results using structured HTML
+            decodeResults.innerHTML = `
+                <h2>✅ DECODING COMPLETE</h2>
+                <p><strong>Encoded File Name:</strong> ${Uploaded.name}</p>
+                <p class="highlight">The original text has been successfully restored and downloaded.</p>
+                <p>Please check your downloads folder for the file: <strong>${Uploaded.name.split(".").slice(0, -1).join(".")}_Original.txt</strong></p>
+            `;
+
+            download(Uploaded.name.split(".").slice(0, -1).join(".") + "_Original.txt", temp);
         }
-        fileReader.readAsText(upload.files[0],"UTF-8");
-        Uploaded=undefined;
+        fileReader.readAsText(upload.files[0], "UTF-8");
+        // Removed: Uploaded=undefined;
     }
+
+    // Function to reset the application state
+    function resetApp() {
+        // 1. Clear the file input selection
+        upload.value = null; 
+        
+        // 2. Reset the label text
+        upload_lable.innerText = "Upload Text File"; 
+        
+        // 3. Clear the results boxes
+        encodeResults.innerHTML = "";
+        decodeResults.innerHTML = "";
+    }
+
+    // Attach the reset function to the button click
+    resetButton.onclick = resetApp;
 }   
