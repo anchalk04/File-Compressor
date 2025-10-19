@@ -1,0 +1,4 @@
+Hello Huffman!
+This is a simple test file.
+It contains letters, spaces, punctuation, and new lines.
+Enjoy testing your Huffman encoder and decoder.

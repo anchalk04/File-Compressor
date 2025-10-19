@@ -3,11 +3,12 @@ body {
   background-size: 100vw 100vh;
   background-attachment: fixed;
   margin: 0 2%;
+  padding-top: 70px;
 }
 #container {
   width: fit-content;
   height: fit-content;
-  margin: 14rem auto;
+  margin: 6rem auto;
   color: aliceblue;
 }
 
@@ -29,43 +30,67 @@ span:hover {
 
 /* New styles for Result Display */
 #results-container {
-  margin-top: 2rem;
-  display: flex; /* Stacks the results vertically */
-  flex-direction: column;
-  gap: 20px;
+    max-height: 60vh;  /* Take 60% of viewport height */
+    overflow-y: auto;
+    margin-top: 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
 }
 
+
+/* Keep result boxes visually distinct */
 .result-box {
-  background-color: rgba(0, 0, 50, 0.8); /* Semi-transparent dark blue background */
-  border: 2px solid #1bcce8; /* Border matching your primary color */
-  padding: 25px;
-  border-radius: 10px;
-  min-height: 100px;
+    background-color: rgba(0, 0, 50, 0.9);
+    border: 2px solid #1bcce8;
+    padding: 20px 30px;
+    border-radius: 10px;
+    min-height: 120px;
+    color: aliceblue;
+    overflow-wrap: break-word;
 }
 
-/* Style for the main status message */
+/* Main heading in result box */
 .result-box h2 {
-  color: #00ff00; /* Bright green for success */
-  margin-bottom: 15px;
-  border-bottom: 1px solid #1bcce8;
-  padding-bottom: 5px;
-  font-size: 1.5rem;
-  font-style: normal;
+    color: #00ff00;
+    margin-bottom: 15px;
+    font-size: 1.5rem;
+    font-weight: bold;
+    border-bottom: 1px solid #1bcce8;
+    padding-bottom: 5px;
 }
 
-/* Style for all paragraphs in the result box */
+/* Paragraphs styling */
 .result-box p {
-  font-size: 1rem;
-  margin: 5px 0;
-  font-weight: normal; 
-  font-style: normal;
-  color: aliceblue;
+    font-size: 1rem;
+    margin: 5px 0;
 }
 
-/* Style for important metrics like the ratio and reduction */
+/* Metric highlights */
 .highlight {
-  color: #ffcc00; /* Gold color for emphasis */
-  font-weight: bold;
+    color: #ffcc00;
+    font-weight: bold;
+}
+
+/* Table for metrics inside result box */
+.result-table {
+    width: 100%;
+    margin-top: 10px;
+    border-collapse: collapse;
+}
+
+.result-table th, .result-table td {
+    padding: 6px 12px;
+    text-align: left;
+}
+
+.result-table th {
+    color: #1bcce8;
+    border-bottom: 1px solid #1bcce8;
+}
+
+.result-table td {
+    color: #fff;
 }
 
 /* Style for the new Reset button */
@@ -77,3 +102,13 @@ span:hover {
 
 /* Ensure the margin spacing remains consistent if the buttons are on one line */
 /* If you want the reset button on a new line, remove 'display: block' from .btn-lg in the original file */
+
+.navbar {
+    position: sticky;   /* Keep navbar at top when scrolling */
+    top: 0;             /* Stick to the very top */
+    z-index: 1000;      /* Make sure it stays above other content */
+    background-color: rgba(0, 0, 50, 0.9); /* Semi-transparent to match your theme */
+    box-shadow: 0 2px 5px rgba(0,0,0,0.3); /* Optional subtle shadow */
+}
+
+

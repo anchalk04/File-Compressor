@@ -1,261 +1,156 @@
-class Heap{
-    constructor()
-    {
-        this.heap=[-1];
-    }
-    isgreater(node1,node2)
-    {
-        if(typeof(node1)==='number')
-        return node1>node2;
-        if(typeof(node1)==='object'&&typeof(node2)==='object')
-        {
-            if(node1[0]==node2[0])
-            return node1[1]>node2[1];
-            return node1[0]>node2[0];
-            
+class Heap {
+    constructor() { this.heap = [-1]; }
+
+    isgreater(node1, node2) {
+        if (typeof node1 === 'number') return node1 > node2;
+        if (typeof node1 === 'object' && typeof node2 === 'object') {
+            if (node1[0] === node2[0]) return node1[1] > node2[1];
+            return node1[0] > node2[0];
         }
         return false;
     }
-    swap(parent_index,index)
-    {
-        let temp=this.heap[parent_index];
-        this.heap[parent_index]=this.heap[index];
-        this.heap[index]=temp;
+
+    swap(i, j) {
+        [this.heap[i], this.heap[j]] = [this.heap[j], this.heap[i]];
     }
-    size()
-    {
-        return this.heap.length;
-    }
-    isempty()
-    {
-        return this.size()<=1;
-    }
-    insert(data)
-    {
-        let arr=this.heap;
-        var index=this.size();
+
+    size() { return this.heap.length; }
+    isempty() { return this.size() <= 1; }
+
+    insert(data) {
+        let index = this.size();
         this.heap.push(data);
-        var parent_index=Math.floor(index/2);
-        while(parent_index>=1)
-        {
-            if(this.isgreater(this.heap[parent_index],this.heap[index]))
-            {
-                this.swap(parent_index,index);
-                index=parent_index;
-                parent_index=Math.floor(index/2);
-                continue;
-            }
-            break;
+        let parent = Math.floor(index / 2);
+        while (parent >= 1 && this.isgreater(this.heap[parent], this.heap[index])) {
+            this.swap(parent, index);
+            index = parent;
+            parent = Math.floor(index / 2);
         }
     }
-    extract()
-    {
-        if(this.size()===2)
-        {
-            let ans=this.heap.pop();
-            return ans;
+
+    extract() {
+        if (this.size() === 2) return this.heap.pop();
+        const ans = this.heap[1];
+        this.heap[1] = this.heap.pop();
+        let index = 1;
+        while (index * 2 < this.size()) {
+            let left = index * 2, right = index * 2 + 1, temp = index;
+            if (left < this.size() && this.isgreater(this.heap[temp], this.heap[left])) temp = left;
+            if (right < this.size() && this.isgreater(this.heap[temp], this.heap[right])) temp = right;
+            if (temp === index) break;
+            this.swap(index, temp);
+            index = temp;
         }
-        var ans=this.heap[1];
-        var last_element=this.heap.pop();
-        this.heap[1]=last_element;
-        var index=1;
-        while(index*2<this.size()||index*2+1<this.size())
-        {
-            let left=index*2,right=index*2+1,temp=index;
-            if(this.isgreater(this.heap[temp],this.heap[left]))
-            temp=left;
-            
-            if(this.isgreater(this.heap[temp],this.heap[right]))
-            temp=right;
-            
-            if(temp!=index)
-            {
-                this.swap(temp,index);
-                index=temp;
-            }
-            else
-            break;
-
-        }
-
-
-
         return ans;
     }
 }
 
-class Encode
-{
-    constructor(data)
-    {
-        this.original_text=data;
-        this.encrypted_text="";
-        this.rem=0;
-        this.tree="";
-        this.freq=new Map();
-        this.path=new Map();
+class Encode {
+    constructor(data) {
+        this.original_text = data;
+        this.encrypted_text = "";
+        this.rem = 0;
+        this.tree = "";
+        this.freq = {};
+        this.path = {};
     }
-    getMapping(node,path)
-    {
-        if(typeof(node[1])=="string"||node.length==1)
-        {
-            this.path[node[1]]=path;
+
+    getMapping(node, path) {
+        if (typeof node[1] === "string" || node.length === 1) {
+            this.path[node[1]] = path;
             return;
         }
-        else
-        {
-            this.getMapping(node[1][0],path+'0');
-            this.getMapping(node[1][1],path+'1');
+        this.getMapping(node[1][0], path + '0');
+        this.getMapping(node[1][1], path + '1');
+    }
+
+    stringify() {
+        this.tree = "";
+        for (let key in this.path) {
+            this.tree += this.path[key] + "|" + key;
         }
     }
-    stringify()
-    {
-        for(const key in this.path)
-        {
-            
-            this.tree+=this.path[key]+"|"+key;
+
+    encrypt(binaryString) {
+        this.rem = (8 - (binaryString.length % 8)) % 8;
+        binaryString += '0'.repeat(this.rem);
+        let bytes = [];
+        for (let i = 0; i < binaryString.length; i += 8) {
+            let byte = binaryString.substr(i, 8);
+            bytes.push(String.fromCharCode(parseInt(byte, 2)));
         }
+        this.encrypted_text = btoa(bytes.join('')); // Base64-safe
     }
-    getCoded(string)
-    {
-        let i=string.length-1,ans=0,mult=1;
-        while(i>=0)
-        {
-            if(string[i]==='1')
-            ans+=mult;
-            mult*=2;
-            i--;
+
+    getBinaryText() {
+        let binaryString = "";
+        for (let i = 0; i < this.original_text.length; i++) {
+            binaryString += this.path[this.original_text[i]];
         }
-        return String.fromCharCode(ans);
-    }
-    encrypt(binaryString)
-    {
-        this.rem=8-binaryString.length%8;
-        for(let i=0;i<this.rem;i++)
-        binaryString+='0';
-        for(let i=0;i<binaryString.length;i+=8)
-        {
-            let temp=binaryString.substring(i,i+8);
-            this.encrypted_text+=this.getCoded(temp);
-        }
-    }
-    getBinaryText()
-    {
-        let binaryString="",data=this.original_text;
-        for(let i=0;i<data.length;i++)
-        {
-            binaryString+=this.path[data[i]];
-        }
-        // console.log(data);
-        // console.log(binaryString);
         this.encrypt(binaryString);
     }
-    encode()
-    {
-        let data=this.original_text;
-        for(let i=0;i<data.length;i++)
-        {
-            if(data[i] in this.freq)
-            this.freq[data[i]]+=1;
-            else
-            this.freq[data[i]]=1;
-        }
-        var heap=new Heap();
-        for(const key in this.freq)
-        {
-            heap.insert([this.freq[key],key]);
-        }
-        // console.log(heap.heap);
-        while(heap.size()>2)
-        {
-            let firstNode=heap.extract(),secondNode=heap.extract();
-            heap.insert([firstNode[0]+secondNode[0],[firstNode,secondNode]]);
-        }
-        // console.log(heap.heap[1]);
-        this.getMapping(heap.heap[1],"");
-        this.stringify()
-        // console.log(this.tree);
-        this.getBinaryText();
-        // console.log(this.encrypted_text);
-        return this.encrypted_text+"\t"+this.rem+"\t"+this.tree;
-    }
 
+    encode() {
+        for (let char of this.original_text) {
+            this.freq[char] = (this.freq[char] || 0) + 1;
+        }
+
+        const heap = new Heap();
+        for (let key in this.freq) heap.insert([this.freq[key], key]);
+        while (heap.size() > 2) {
+            let first = heap.extract(), second = heap.extract();
+            heap.insert([first[0] + second[0], [first, second]]);
+        }
+
+        this.getMapping(heap.heap[1], "");
+        this.stringify();
+        this.getBinaryText();
+        return this.encrypted_text + "\t" + this.rem + "\t" + this.tree;
+    }
 }
 
-class Decode
-{
-    constructor(encoded)
-    {
-        var [encrypted_text,rem,tree]=encoded.split("\t");
-        this.encrypted_text=encrypted_text;
-        this.rem=rem;
-        this.tree=tree;
-        this.binaryText="";
-        this.original_text="";  
-        this.path=new Map();
+class Decode {
+    constructor(encoded) {
+        const [encrypted_text, rem, tree] = encoded.split("\t");
+        this.encrypted_text = encrypted_text;
+        this.rem = parseInt(rem);
+        this.tree = tree;
+        this.binaryText = "";
+        this.original_text = "";
+        this.path = {};
     }
-    getPath()
-    {
-        var path=new Map();
-        var tree=this.tree;
-        for(let i=0;i<tree.length;i++)
-        {
-            var temp="";
-            while(tree[i]!='|')
-            {
-                temp+=tree[i++];
-            }
-            if(tree[i]=='|')
-            {
-                i++;
-                path[temp]=tree[i];
-            }
+
+    getPath() {
+        let i = 0;
+        while (i < this.tree.length) {
+            let code = "";
+            while (i < this.tree.length && this.tree[i] !== '|') code += this.tree[i++];
+            i++;
+            if (i < this.tree.length) this.path[code] = this.tree[i++];
         }
-        this.path=path;
-        // console.log("Decode Path",path);
     }
-    getBinaryString(n)
-    {
-        var temp="";
-        var i=n;
-        while(n)
-        {
-            
-            temp=n%2+temp;
-            n=Math.floor(n/2);
+
+    getBinaryText() {
+        let decoded = atob(this.encrypted_text);
+        this.binaryText = "";
+        for (let ch of decoded) {
+            this.binaryText += ch.charCodeAt(0).toString(2).padStart(8, '0');
         }
-        while(temp.length<8)
-        {
-            temp='0'+temp;
-        }
-        // console.log("Binary String",temp,i)
-        return temp;
+        if (this.rem) this.binaryText = this.binaryText.slice(0, -this.rem);
     }
-    getBinaryText()
-    {
-        var encrypted_text=this.encrypted_text;
-        for(let i=0;i<encrypted_text.length;i++)
-        {
-            this.binaryText+=this.getBinaryString(encrypted_text.charCodeAt(i));
-        }
-        // console.log("Decode Binary Text",this.binaryText);
-    }
-    getOriginal()
-    {
-        var temp="",binaryText=this.binaryText;
-        for(let i=0;i<binaryText.length-this.rem;i++)
-        {
-            temp+=binaryText[i];
-            if(temp in this.path)
-            {
-                this.original_text+=this.path[temp];
-                temp="";
+
+    getOriginal() {
+        let temp = "";
+        for (let bit of this.binaryText) {
+            temp += bit;
+            if (temp in this.path) {
+                this.original_text += this.path[temp];
+                temp = "";
             }
         }
-        // console.log(this.original_text);
     }
-    decode()
-    {
+
+    decode() {
         this.getPath();
         this.getBinaryText();
         this.getOriginal();
@@ -263,56 +158,52 @@ class Decode
     }
 }
 
-function encode(data)
-{
-    var encode=new Encode(data);
-    return encode.encode();
+function encodeFile(data) {
+    return new Encode(data).encode();
 }
 
-function decode(onEncode)
-{
-    var decode=new Decode(onEncode);
-    return decode.decode();
+function decodeFile(encoded) {
+    return new Decode(encoded).decode();
 }
 
+// ------------------ UI ------------------
+window.onload = function () {
+    const upload = document.getElementById("upload");
+    const encodeResults = document.getElementById("encode-results");
+    const decodeResults = document.getElementById("decode-results");
+    const encodeBtn = document.getElementById("encode");
+    const decodeBtn = document.getElementById("decode");
+    const upload_label = document.getElementById("upload_lable");
+    const resetButton = document.getElementById("reset");
 
+    function download(fileName, data) {
+        // Create a Blob from the string
+        const blob = new Blob([data], { type: "text/plain" });
+        const url = URL.createObjectURL(blob);
 
-
-onload=function()
-{
-    var upload=document.getElementById("upload")
-    var encodeResults = document.getElementById("encode-results");
-    var decodeResults = document.getElementById("decode-results");
-    var encode=document.getElementById("encode")
-    var decode=document.getElementById("decode")
-    var upload_lable=document.getElementById("upload_lable")
-    var resetButton = document.getElementById("reset");
-
-    function download(fileName,data)
-    {
-        let a=document.createElement("a");
-        a.href='data:application/octet-stream,'+encodeURIComponent(data);
-        a.download=fileName;
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = fileName;
         a.click();
+
+        // Release the object URL after download
+        URL.revokeObjectURL(url);
     }
 
 
-
-    // upload.addEventListener("change",()=>{alert("File Uploaded")})
-    upload.addEventListener("change",()=>{
-        upload_lable.innerText=upload.files[0].name;
-        // Clear results when a new file is uploaded
-        encodeResults.innerHTML = ""; 
+    upload.addEventListener("change", () => {
+        upload_label.innerText = upload.files[0].name;
+        encodeResults.innerHTML = "";
         decodeResults.innerHTML = "";
-    })
+    });
 
-    encode.onclick = function() {
-        // 1. Clear both result boxes before starting
+   encode.onclick = function() {
         encodeResults.innerHTML = "";
         decodeResults.innerHTML = "";
 
-        const Uploaded = upload.files[0];
-        if (Uploaded === undefined) {
+        const uploadedFile = upload.files[0]; // use a consistent name
+
+        if (!uploadedFile) {
             encodeResults.innerHTML = "<h2>❌ FILE NOT UPLOADED</h2><p>Please upload a text file to compress.</p>";
             return;
         }
@@ -325,41 +216,39 @@ onload=function()
                 return;
             }
 
-            var encode = new Encode(data);
-            var temp = encode.encode(data);
+            var encoder = new Encode(data);
+            var encodedText = encoder.encode();
 
-            // Calculate metrics for display
             const originalSize = data.length;
-            const encodedSize = temp.length;
-            // Compression Ratio: Original Size / Encoded Size (e.g., 2.5:1)
+            const encodedSize = encodedText.length;
             const ratio = (originalSize / encodedSize).toFixed(2);
-            // Size Reduction: Percentage decrease
             const reduction = (((originalSize - encodedSize) / originalSize) * 100).toFixed(2);
 
-            // Display results using structured HTML
             encodeResults.innerHTML = `
                 <h2>✅ ENCODING COMPLETE</h2>
-                <p><strong>File Name:</strong> ${Uploaded.name}</p>
-                <p><strong>Original Character Size:</strong> ${originalSize}</p>
-                <p><strong>Encoded Character Size:</strong> ${encodedSize}</p>
-                <p class="highlight"><strong>Compression Ratio:</strong> ${ratio}:1</p>
-                <p class="highlight"><strong>Size Reduction:</strong> ${reduction}%</p>
-                <p>The encoded file has been successfully downloaded as <strong>${Uploaded.name.split(".").slice(0, -1).join(".")}_Encoded.txt</strong>.</p>
+                <p><strong>File Name:</strong> ${uploadedFile.name}</p>
+                <table class="result-table">
+                    <tr><th>Original Size (chars)</th><td>${originalSize}</td></tr>
+                    <tr><th>Encoded Size (chars)</th><td>${encodedSize}</td></tr>
+                    <tr><th>Compression Ratio</th><td>${ratio}:1</td></tr>
+                    <tr><th>Size Reduction</th><td>${reduction}%</td></tr>
+                </table>
+                <p>The encoded file has been successfully downloaded as <strong>${uploadedFile.name.split(".").slice(0, -1).join(".")}_Encoded.txt</strong>.</p>
             `;
 
-            download(Uploaded.name.split(".").slice(0, -1).join(".") + "_Encoded.txt", temp);
+            download(uploadedFile.name.split(".").slice(0, -1).join(".") + "_Encoded.txt", encodedText);
         }
-        fileReader.readAsText(Uploaded, "UTF-8");
-        // Removed: Uploaded=undefined;
+
+        fileReader.readAsText(uploadedFile, "UTF-8");
     }
 
     decode.onclick = function() {
-        // 1. Clear both result boxes before starting
         encodeResults.innerHTML = "";
         decodeResults.innerHTML = "";
 
-        const Uploaded = upload.files[0];
-        if (Uploaded === undefined) {
+        const uploadedFile = upload.files[0]; // consistently named
+
+        if (!uploadedFile) {
             decodeResults.innerHTML = "<h2>❌ FILE NOT UPLOADED</h2><p>Please upload the encoded file to decode.</p>";
             return;
         }
@@ -367,41 +256,47 @@ onload=function()
         const fileReader = new FileReader();
         fileReader.onload = function(fileLoadEvent) {
             const data = fileLoadEvent.target.result;
-            if (data.length === 0) {
+
+            if (!data || data.length === 0) {
                 decodeResults.innerHTML = "<h2>❌ EMPTY FILE</h2><p>The uploaded file contains no data.</p>";
                 return;
             }
 
-            var decode = new Decode(data);
-            var temp = decode.decode();
+            if (data.indexOf('\t') === -1) {
+                decodeResults.innerHTML = "<h2>❌ DECODE FAILED</h2><p>The uploaded file is not in the expected encoded format. Did you upload an unencoded text file?</p>";
+                return;
+            }
 
-            // Display results using structured HTML
-            decodeResults.innerHTML = `
-                <h2>✅ DECODING COMPLETE</h2>
-                <p><strong>Encoded File Name:</strong> ${Uploaded.name}</p>
-                <p class="highlight">The original text has been successfully restored and downloaded.</p>
-                <p>Please check your downloads folder for the file: <strong>${Uploaded.name.split(".").slice(0, -1).join(".")}_Original.txt</strong></p>
-            `;
+            try {
+                const decoder = new Decode(data);
+                const decodedText = decoder.decode();
 
-            download(Uploaded.name.split(".").slice(0, -1).join(".") + "_Original.txt", temp);
+                decodeResults.innerHTML = `
+                    <h2>✅ DECODING COMPLETE</h2>
+                    <p><strong>Encoded File Name:</strong> ${uploadedFile.name}</p>
+                    <p>The original text has been successfully restored and downloaded.</p>
+                    <p>Please check your downloads folder for the file: <strong>${uploadedFile.name.split(".").slice(0, -1).join(".")}_Original.txt</strong></p>
+                `;
+
+                download(uploadedFile.name.split(".").slice(0, -1).join(".") + "_Original.txt", decodedText);
+            } catch (e) {
+                decodeResults.innerHTML = `
+                    <h2>❌ DECODING FAILED</h2>
+                    <p>An internal error occurred during decoding. Ensure the file was generated by the Encode button.</p>
+                    <p>Error: ${e.message}</p>
+                `;
+            }
         }
-        fileReader.readAsText(upload.files[0], "UTF-8");
-        // Removed: Uploaded=undefined;
+
+        fileReader.readAsText(uploadedFile, "UTF-8");
     }
 
-    // Function to reset the application state
-    function resetApp() {
-        // 1. Clear the file input selection
-        upload.value = null; 
-        
-        // 2. Reset the label text
-        upload_lable.innerText = "Upload Text File"; 
-        
-        // 3. Clear the results boxes
+
+
+    resetButton.onclick = function () {
+        upload.value = null;
+        upload_label.innerText = "Upload Text File";
         encodeResults.innerHTML = "";
         decodeResults.innerHTML = "";
     }
-
-    // Attach the reset function to the button click
-    resetButton.onclick = resetApp;
-}   
+}
